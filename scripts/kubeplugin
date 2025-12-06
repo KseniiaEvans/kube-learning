@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Простий usage, щоб скрипт не ламався без аргументів
+if [ -z "$1" ]; then
+    echo "Usage: $0 <resource> [namespace]"
+    echo "Example: $0 pods kube-system"
+    exit 1
+fi
+
+RESOURCE="$1"                 # наприклад: pods або nodes
+NAMESPACE="${2:-kube-system}" # якщо не вказали namespace — kube-system
+
+echo "Resource,Namespace,Name,CPU,Memory"
+
+if [ "$RESOURCE" = "nodes" ]; then
+    kubectl top "$RESOURCE" 2>/dev/null | tail -n +2 | while read NAME CPU CPU_PTC MEM MEM_PTC; do
+      echo "$RESOURCE,-,$NAME,$CPU,$MEM" 
+    done
+else
+  kubectl top "$RESOURCE" -n "$NAMESPACE" 2>/dev/null | tail -n +2 | while read NAME CPU MEM _; do
+      echo "$RESOURCE,$NAMESPACE,$NAME,$CPU,$MEM"
+      done
+fi
